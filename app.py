@@ -1,5 +1,7 @@
 import os
 from flask import Flask, request, jsonify, send_file
+from speech_brain.convert import enhancement
+from speech_brain.convert import send_audio
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -32,7 +34,8 @@ def upload_file():
 
     return 'File uploaded successfully'
 
-file_path = '/Users/maralgun/projects/speech/enhancement/output.wav'
+file_path = '/Users/maralgun/projects/speech/enhancement/maralgun.wav'
+
 
 @app.route('/get_file_info')
 def get_file_info():
@@ -42,7 +45,8 @@ def get_file_info():
 
 @app.route('/get_file')
 def get_file():
-    return send_file(file_path, as_attachment=True)
+    enhanced_audio = enhancement(file_path)
+    return send_audio(enhanced_audio)
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
