@@ -40,7 +40,7 @@ def upload_file():
     file.save(file_path)
 
     try:
-        enh_file = enhancement(file_path)
+        enh_file = enhancement(file_path, 2)
     except Exception as e:
         return f'Error processing file: {str(e)}'
 
@@ -58,7 +58,7 @@ file_path = '/Users/maralgun/projects/speech/enhancement/maralgun.wav'
 @app.route('/get_file_info')
 def get_file_info():
     global file_path
-    file = enhancement(file_path)
+    file = enhancement(file_path, 2)
     # with open("output.wav", "wb") as f:
     #     f.write(file.getvalue())
     file_data = file.read()
@@ -71,7 +71,7 @@ def get_file_info():
 @app.route('/get_file')
 def get_file():
     global file_path
-    file = enhancement(file_path)
+    file = enhancement(file_path, 2)
 
     try:
         return send_file(file,as_attachment=True, download_name='output.wav', mimetype='audio/wav')

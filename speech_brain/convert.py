@@ -2,21 +2,29 @@ import torchaudio
 import speechbrain as sb
 from speechbrain.dataio.dataio import read_audio
 from IPython.display import Audio
+from io import BytesIO
 
 from speechbrain.inference.separation import SepformerSeparation as separator
-model = separator.from_hparams(source="speechbrain/sepformer-whamr-enhancement", savedir='pretrained_models/sepformer-whamr-enhancement')
 
-print("TEST")
-# enhanced_speech = model.separate_file(path='maralgun.wav')
+models = [
+    Separator.from_hparams(source="speechbrain/sepformer-wham-enhancement", savedir='pretrained_models/sepformer-wham-enhancement'),
+    Separator.from_hparams(source="speechbrain/sepformer-wham16k-enhancement", savedir='pretrained_models/sepformer-wham16k-enhancement'),
+    Separator.from_hparams(source="speechbrain/sepformer-whamr-enhancement", savedir='pretrained_models/sepformer-whamr-enhancement'),
+    Separator.from_hparams(source="speechbrain/sepformer-dns4-16k-enhancement", savedir='pretrained_models/sepformer-dns4-16k-enhancement')
+]
+import io
+from scipy.io.wavfile import write
 
-# file = Audio(enhanced_speech[:, :].detach().cpu().squeeze(), rate=8000)
+def enhancement(file_path, modelId):
+    enhanced_speech = models[modelId].separate_file(path=file_path)
 
-def enhancement(file_path):
-    enhanced_speech = model.separate_file(path=file_path)
-    return Audio(enhanced_speech[:, :].detach().cpu().squeeze(), rate=8000)
+    enhanced_audio_data = enhanced_speech[:, :].detach().cpu().squeeze().numpy()
 
-def send_audio(enhanced_audio):
-    output = BytesIO()
-    torchaudio.save(output, enhanced_audio[0], enhanced_audio[1], format="wav")
-    output.seek(0)
-    return send_file(output, mimetype="audio/wav")
+    file = io.BytesIO()
+
+    write(file, 8000, enhanced_audio_data)
+
+    file.seek(0)
+
+    return file
+
