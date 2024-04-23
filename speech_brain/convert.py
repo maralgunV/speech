@@ -21,7 +21,10 @@ def enhancement(file_path, modelId):
     enhanced_speech = models[modelId].separate_file(path=file_path)
     enhanced_audio_data = enhanced_speech[:, :].detach().cpu().squeeze().numpy()
     file = io.BytesIO()
-    write(file, 8000, enhanced_audio_data)
+    sample_rate = 8000 if modelId in (0, 2) else 16000
+
+    write(file, sample_rate, enhanced_audio_data)
+
     file.seek(0)
 
     return file

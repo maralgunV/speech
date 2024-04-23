@@ -21,11 +21,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def get_data():
     return jsonify(data=[1, 2, 3])
 
-@app.route('/modelId', methods=['POST'])
-def index():
-    global modelId
-    modelId = request.form.get('data')
-    return 'Model ID received successfully.'
+# @app.route('/modelId', methods=['POST'])
+# def index():
+#     global modelId
+#     modelId = request.form.get('data')
+#     return 'Model ID received successfully.'
 
 
 @app.route('/upload', methods=['POST'])
@@ -41,21 +41,24 @@ def upload_file():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], random_name)
     file.save(file_path)
 
-    try:
-        enh_file = enhancement(file_path, modelId)
-    except Exception as e:
-        return f'Error processing file: {str(e)}'
+    # try:
+    #     enh_file = enhancement(file_path, modelId)
+    # except Exception as e:
+    #     return f'Error processing file: {str(e)}'
 
-    file_data = enh_file.read()
-    if file.filename == '':
-        return 'No selected file'
+    # file_data = enh_file.read()
+    # if file.filename == '':
+    #     return 'No selected file'
 
-    file_size = len(file_data)
+    # file_size = len(file_data)
+
+    file.seek(0, os.SEEK_END) 
+    file_size = file.tell() 
+    file.seek(0)
 
     return str(file_size)
 
 file_path = '/Users/maralgun/projects/speech/enhancement/maralgun.wav'
-modelId = 2
 
 @app.route('/get_file_info')
 def get_file_info():
@@ -70,10 +73,13 @@ def get_file_info():
 
     return jsonify(filename=file_name, size=file_size)
 
-@app.route('/get_file')
+@app.route('/get_file', methods=['GET'])
 def get_file():
     global file_path
-    file = enhancement(file_path, modelId)
+
+    modelId = request.args.get('modelId')
+
+    file = enhancement(file_path, int(modelId))
 
     try:
         return send_file(file,as_attachment=True, download_name='output.wav', mimetype='audio/wav')
@@ -111,15 +117,16 @@ def upload_file_zip():
 
     return file.filename   
 
-@app.route('/get_file_zip')
+@app.route('/get_file_zip', methods=['GET'])
 def get_file_zip():
 
+    modelId = request.args.get('modelId')
+    
     # print(unzip_folder)
     # print(modelId)
-    files = read_files_in_folder(unzip_folder, modelId)
+    files = read_files_in_folder(unzip_folder, int(modelId))
     # file = zip_folder(unzip_folder)
     file = create_zip_from_files(files)
-
 
     try:
         return send_file(file, as_attachment=True, download_name='output.zip', mimetype='zip')
@@ -127,4 +134,4 @@ def get_file_zip():
         return str(e)
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=5001, debug=True)
